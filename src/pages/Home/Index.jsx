@@ -5,6 +5,8 @@ import Cart from "../../components/Cart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBagShopping } from "@fortawesome/free-solid-svg-icons";
 import { dummyDatas } from "../../datas";
+import productsApi from "../../api/productsApi";
+import Swal from "sweetalert2";
 
 const Index = () => {
   const [showModal, setShowModal] = useState(false);
@@ -13,11 +15,40 @@ const Index = () => {
 
   const [searchInput, setSearchInput] = useState("");
 
-  const [dataProducts, setDataProducts] = useState(dummyDatas);
+  const [dataProducts, setDataProducts] = useState([]);
+  // const [dataProducts, setDataProducts] = useState(dummyDatas);
+
+  const getProducts = async () => {
+    let res = null;
+    try {
+      res = await productsApi.getAllProducts();
+      setDataProducts(res.data.products);
+      console.log(res);
+    } catch (error) {
+      Swal.fire({
+        title: "Failed",
+        text: "Terjadi error, silahkan refresh halaman",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
 
   const addProductToBag = (product) => {
     setSelectedProduct([...selectedProduct, product]);
+    Swal.fire({
+      title: "Success",
+      text: "Produk berhasil ditambahkan!",
+      icon: "success",
+      confirmButtonText: "OK",
+      timer: 1500,
+      timerProgressBar: true,
+    });
   };
+
+  function currencyFormat(num) {
+    return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+  }
 
   const removeProductFromBag = (product) => {
     setSelectedProduct((allProducts) =>
@@ -40,8 +71,6 @@ const Index = () => {
     setDataProducts(productsSearch);
   };
 
-  //   setDataProducts(dummyDatas);
-
   useEffect(() => {
     if (searchInput.length !== 0) {
       const productsSearch = dataProducts.filter((value) =>
@@ -49,11 +78,13 @@ const Index = () => {
       );
       setDataProducts(productsSearch);
     } else {
-      setDataProducts(dummyDatas);
+      getProducts();
     }
   }, [searchInput]);
 
-  console.log(searchInput.length);
+  useEffect(() => {
+    getProducts();
+  }, []);
 
   return (
     <>
@@ -67,6 +98,7 @@ const Index = () => {
           showModal={showModal}
           setShowModal={setShowModal}
           products={selectedProduct}
+          currency={currencyFormat}
         />
       ) : null}
       <section className="content-section w-11/12 mx-auto my-14">
@@ -75,7 +107,7 @@ const Index = () => {
           <div className="line w-full h-0.5 bg-abu"></div>
         </div>
 
-        <div className="products-content grid grid-cols-12 mx-auto gap-x-3">
+        <div className="products-content grid grid-cols-12 gap-x-3">
           <div className="search-products col-span-2">
             <form
               //   onSubmit={onSearch}
@@ -102,17 +134,18 @@ const Index = () => {
               </button>
             </form>
           </div>
-          <div className="list-products col-span-10 grid grid-cols-12 mx-auto gap-x-4 gap-y-5">
-            {dataProducts.map((product, idxProduct) => {
+          <div className="list-products col-span-10 grid grid-cols-12 gap-x-4 gap-y-5">
+            {dataProducts?.map((product, idxProduct) => {
               return (
                 <>
                   <div
                     key={idxProduct}
                     className="card-product col-span-3 bg-white rounded-lg shadow flex flex-col"
                   >
-                    <div className="product-image w-full">
-                      <img src={product.img} alt="produk-1" />
-                    </div>
+                    <div
+                      style={{ backgroundImage: `url(${product.images[0]})` }}
+                      className={`product-image h-60 bg-contain bg-no-repeat bg-center`}
+                    ></div>
                     <div className="product-detail px-3 py-4">
                       <div className="flex justify-between">
                         <div className="product-title text-base font-medium text-hitam">
@@ -138,7 +171,7 @@ const Index = () => {
                         {product.category}
                       </div>{" "}
                       <div className="price text-biru-primary font-normal text-xl mt-2">
-                        {product.price}
+                        {currencyFormat(product.price)}
                       </div>
                     </div>
                   </div>

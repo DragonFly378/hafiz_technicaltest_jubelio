@@ -35,7 +35,7 @@ const Navbar = ({ showModal, setShowModal, products }) => {
                 className="text-biru-primary text-2xl"
               />{" "}
             </button>
-            <div className="relative left-[-8px] top-[-7px] cart-total text-xs bg-oren h-4 w-4 text-center rounded-xl">
+            <div className="relative left-[-8px] top-[-7px] cart-total text-xs text-white bg-merah h-4 w-4 text-center rounded-xl">
               {productSelected.length}
             </div>
           </div>
